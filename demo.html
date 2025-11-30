@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Moments - Demo</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .game-card {
+            transition: all 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Mini versión de la base de datos para demo
+        const questionsDatabase = {
+          conocimiento: [
+            "¿Cuál es tu recuerdo favorito de la infancia?",
+            "¿Qué te hace sentir más orgulloso de ti mismo?",
+            "Si pudieras tener un superpoder, ¿cuál sería y por qué?"
+          ],
+          gratitud: [
+            "¿Por qué estás agradecido hoy?",
+            "¿Quién ha tenido el mayor impacto positivo en tu vida?",
+            "¿Qué momento de esta semana te hizo sonreír?"
+          ],
+          diversion: [
+            "Si fueras un animal por un día, ¿cuál serías y qué harías?",
+            "¿Cuál es el peor regalo que has recibido?",
+            "Si pudieras ser famoso por algo ridículo, ¿qué sería?"
+          ]
+        };
+
+        const gameModes = [
+          {
+            id: 'clasico',
+            name: 'Modo Clásico',
+            icon: '🎯',
+            description: 'Preguntas variadas para conocerse mejor',
+            color: 'from-blue-500 to-blue-600'
+          },
+          {
+            id: 'rapido',
+            name: 'Modo Rápido',
+            icon: '⚡',
+            description: 'Rondas de 60 segundos para responder',
+            color: 'from-yellow-500 to-orange-500',
+            timeLimit: 60
+          },
+          {
+            id: 'divertido',
+            name: 'Modo Diversión',
+            icon: '🎉',
+            description: 'Preguntas ligeras y divertidas',
+            color: 'from-pink-500 to-rose-500',
+            categories: ['diversion']
+          }
+        ];
+
+        function FamilyMomentsApp() {
+          const [screen, setScreen] = useState('welcome');
+          const [selectedMode, setSelectedMode] = useState(null);
+          const [currentQuestion, setCurrentQuestion] = useState('');
+          const [playerStats, setPlayerStats] = useState({
+            totalPoints: 150,
+            questionsAnswered: 15,
+            level: 2,
+            streak: 3
+          });
+
+          const getRandomQuestion = (categories = null) => {
+            const categoriesToUse = categories || Object.keys(questionsDatabase);
+            const randomCategory = categoriesToUse[Math.floor(Math.random() * categoriesToUse.length)];
+            const categoryQuestions = questionsDatabase[randomCategory];
+            return categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
+          };
+
+          const startGame = (mode) => {
+            setSelectedMode(mode);
+            setCurrentQuestion(getRandomQuestion(mode.categories));
+            setScreen('game');
+          };
+
+          const handleNextQuestion = () => {
+            setCurrentQuestion(getRandomQuestion(selectedMode.categories));
+            setPlayerStats({
+              ...playerStats,
+              questionsAnswered: playerStats.questionsAnswered + 1,
+              totalPoints: playerStats.totalPoints + 10,
+              streak: playerStats.streak + 1
+            });
+          };
+
+          if (screen === 'welcome') {
+            return (
+              <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+                <div className="text-center animate-fade-in">
+                  <div className="text-8xl mb-6">👨‍👩‍👧‍👦</div>
+                  <h1 className="text-5xl font-bold text-white mb-4">Family Moments</h1>
+                  <p className="text-xl text-white/90 mb-8 max-w-md">
+                    Fortalece los lazos familiares con conversaciones significativas
+                  </p>
+                  <button
+                    onClick={() => setScreen('modeSelection')}
+                    className="btn-primary text-white px-12 py-4 rounded-full text-xl font-semibold"
+                  >
+                    Comenzar
+                  </button>
+                  
+                  <div className="mt-12 text-white/80">
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{playerStats.level}</div>
+                        <div className="text-sm">Nivel</div>
+                      </div>
+                      <div className="w-px h-12 bg-white/30"></div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{playerStats.totalPoints}</div>
+                        <div className="text-sm">Puntos</div>
+                      </div>
+                      <div className="w-px h-12 bg-white/30"></div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{playerStats.questionsAnswered}</div>
+                        <div className="text-sm">Preguntas</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (screen === 'modeSelection') {
+            return (
+              <div className="min-h-screen bg-gray-50 p-4">
+                <div className="max-w-4xl mx-auto">
+                  <div className="text-center mb-8 pt-8">
+                    <h2 className="text-4xl font-bold text-gray-800 mb-2">Elige tu Modo de Juego</h2>
+                    <p className="text-gray-600">Demo con 3 modos - La versión completa tiene 8</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {gameModes.map(mode => (
+                      <div
+                        key={mode.id}
+                        onClick={() => startGame(mode)}
+                        className="game-card card-shadow bg-white rounded-2xl p-6 cursor-pointer"
+                      >
+                        <div className={`w-16 h-16 bg-gradient-to-br ${mode.color} rounded-xl flex items-center justify-center text-3xl mb-4`}>
+                          {mode.icon}
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{mode.name}</h3>
+                        <p className="text-gray-600">{mode.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => setScreen('welcome')}
+                    className="w-full py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold text-gray-700 transition"
+                  >
+                    ← Volver al Inicio
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          if (screen === 'game') {
+            return (
+              <div className={`min-h-screen bg-gradient-to-br ${selectedMode.color} p-4 flex flex-col`}>
+                <div className="max-w-4xl mx-auto w-full">
+                  <div className="flex justify-between items-center mb-6 text-white">
+                    <button onClick={() => setScreen('modeSelection')} className="text-2xl">←</button>
+                    <div className="text-center">
+                      <div className="text-sm opacity-90">{selectedMode.name}</div>
+                      <div className="font-bold text-lg">Nivel {playerStats.level}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm opacity-90">Puntos</div>
+                      <div className="font-bold text-lg">{playerStats.totalPoints}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="max-w-2xl w-full">
+                    <div className="bg-white rounded-3xl p-8 md:p-12 card-shadow animate-fade-in">
+                      <div className="text-center mb-6">
+                        <div className="text-6xl mb-4">{selectedMode.icon}</div>
+                        <div className="text-sm text-gray-500 mb-4">
+                          Pregunta #{playerStats.questionsAnswered + 1}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-800 text-center leading-relaxed">
+                        {currentQuestion}
+                      </h3>
+                      
+                      {playerStats.streak > 0 && (
+                        <div className="mt-6 text-center">
+                          <span className="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold">
+                            🔥 Racha: {playerStats.streak}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="max-w-4xl mx-auto w-full mt-6">
+                  <button
+                    onClick={handleNextQuestion}
+                    className="w-full bg-white text-gray-800 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition"
+                  >
+                    Siguiente Pregunta →
+                  </button>
+                </div>
+              </div>
+            );
+          }
+        }
+
+        ReactDOM.render(<FamilyMomentsApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
